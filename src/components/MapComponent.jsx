@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import KalmanFilter from "kalmanjs";
 import L from "leaflet";
 
 // Corriger les problèmes d'icône de Leaflet
@@ -16,20 +15,12 @@ const MapComponent = () => {
   const [position, setPosition] = useState(null);
   const [hasLocation, setHasLocation] = useState(false);
 
-  const latKalmanFilter = new KalmanFilter();
-  const lngKalmanFilter = new KalmanFilter();
-
   useEffect(() => {
     if (navigator.geolocation) {
-      const watchId = navigator.geolocation.watchPosition(
+      navigator.geolocation.getCurrentPosition(
         (pos) => {
           const { latitude, longitude } = pos.coords;
-
-          // Appliquer le filtre Kalman aux coordonnées
-          const filteredLatitude = latKalmanFilter.filter(latitude);
-          const filteredLongitude = lngKalmanFilter.filter(longitude);
-
-          setPosition([filteredLatitude, filteredLongitude]);
+          setPosition([latitude, longitude]);
           setHasLocation(true);
         },
         (error) => {
@@ -41,9 +32,6 @@ const MapComponent = () => {
           maximumAge: 0,
         }
       );
-
-      // Nettoyer l'observateur lorsqu'il n'est plus nécessaire
-      return () => navigator.geolocation.clearWatch(watchId);
     } else {
       console.log(
         "La géolocalisation n'est pas prise en charge par ce navigateur."
